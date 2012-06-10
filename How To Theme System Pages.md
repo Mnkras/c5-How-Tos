@@ -79,7 +79,7 @@ This function is fired when concrete5 starts running.
 In this function we are going to extend the `on_start` event in concrete5.
 
 	public function on_start() {
-		Events::extend('on_start', get_class($this), 'setTheme', __FILE__);
+		Events::extend('on_start', __CLASS__, 'setTheme', __FILE__);
 	}
 	
 Now we are going to add the `setTheme` function to our controller.
