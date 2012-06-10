@@ -11,7 +11,9 @@ A standard theme will have several files:
 - `default.php` - Default pagetype template
 - `view.php` - Default single page template
 
-We are really interested in the `view.php`, that is used to theme single pages such as the checkout page in eCommerce package. Some core system pages such as the Page Not Found page can be a little more tricky.
+We are really interested in the `view.php`, that is used to theme single pages such as the checkout page in eCommerce package. You can setup specific templates for specific single pages by using the single page handle as the filename (`view.php` -> `page_not_found.php`).
+
+Some core system pages such as the Page Not Found page can be a little more tricky.
 
 In the core there is a file called `theme_paths.php` (located in `/concrete/config`) which sets the core theme on the following pages:
 
