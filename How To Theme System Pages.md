@@ -89,7 +89,7 @@ Now we are going to add the `setTheme` function to our controller.
 		$theme = PageTheme::getByHandle('my_theme');
 		$site = $theme->getSiteTheme();
 		if($theme == $site) { //we check to make sure this theme is applied to the site.
-			$pages = array('/login', '/page_not_found', '/register'); //these are the pages we wan't to theme
+			$pages = array('/login', '/page_not_found', '/register'); //these are the pages we want to theme
 			$view = View::getInstance();
 			foreach($pages as $page) {
 				$view->setThemeByPath($page, $theme->getThemeHandle());
