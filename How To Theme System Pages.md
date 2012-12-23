@@ -29,11 +29,13 @@ If it is a non-packaged theme there is only one way to theme those pages. In the
 
 In this file there will be some commented out code:
 
-	$v = View::getInstance();
+```php
+$v = View::getInstance();
 
-	$v->setThemeByPath('/login', "yourtheme");
-	$v->setThemeByPath('/page_forbidden', "yourtheme");
-	$v->setThemeByPath('/register', "yourtheme");
+$v->setThemeByPath('/login', "yourtheme");
+$v->setThemeByPath('/page_forbidden', "yourtheme");
+$v->setThemeByPath('/register', "yourtheme");
+```
 	
 In this code we are manually setting the theme for a page. You can simply un-comment the code and replace `yourtheme` with your theme's handle and it will instantly take effect on your site.
 
@@ -41,28 +43,30 @@ If your theme is in a package you can solve this a little bit more elegantly. (Y
 
 Below is an example package controller:
 
-	<?php defined('C5_EXECUTE') or die("Access Denied.");
-	
-	class MyThemePackage extends Package {
-	
-		protected $pkgHandle = 'my_theme';
-		protected $appVersionRequired = '5.5.2';
-		protected $pkgVersion = '1.0';
-	
-		public function getPackageName() {
-			return t("My Theme");
-		}
-	
-		public function getPackageDescription() {
-			return t("A wonderful theme this is!");
-		}
-		
-		public function install() {
-			$pkg = parent::install();
-			PageTheme::add('my_theme', $pkg);
-		}
-		
+```php
+<?php defined('C5_EXECUTE') or die("Access Denied.");
+
+class MyThemePackage extends Package {
+
+	protected $pkgHandle = 'my_theme';
+	protected $appVersionRequired = '5.5.2';
+	protected $pkgVersion = '1.0';
+
+	public function getPackageName() {
+		return t("My Theme");
 	}
+
+	public function getPackageDescription() {
+		return t("A wonderful theme this is!");
+	}
+	
+	public function install() {
+		$pkg = parent::install();
+		PageTheme::add('my_theme', $pkg);
+	}
+	
+}
+```
 
 Right now all this does is install the theme.
 
@@ -70,75 +74,83 @@ What we are going to do is add an event to set the theme on select pages.
 
 First we have to a new function to our package controller.
 
-	public function on_start() {
-	
-	}
+```php
+public function on_start() {
+
+}
+```
 	
 This function is fired when concrete5 starts running.
 
 In this function we are going to extend the `on_start` event in concrete5.
 
+```php
+public function on_start() {
+	Events::extend('on_start', __CLASS__, 'setTheme', __FILE__);
+}
+```
+	
+Now we are going to add the `setTheme` function to our controller.
+
+```php
+public function setTheme() {
+	Loader::model('page_theme');
+	$theme = PageTheme::getByHandle('my_theme');
+	$site = $theme->getSiteTheme();
+	if($theme == $site) { //we check to make sure this theme is applied to the site.
+		$pages = array('/login', '/page_not_found', '/register'); //these are the pages we want to theme
+		$view = View::getInstance();
+		foreach($pages as $page) {
+			$view->setThemeByPath($page, $theme->getThemeHandle());
+		}
+	}
+}
+```
+	
+Replace the pages array with an array of pages like those above, and `my_theme` with your theme handle.
+
+So our controller will now look like this:
+
+```php
+<?php defined('C5_EXECUTE') or die("Access Denied.");
+
+class MyThemePackage extends Package {
+
+	protected $pkgHandle = 'my_theme';
+	protected $appVersionRequired = '5.5.2';
+	protected $pkgVersion = '1.0';
+
+	public function getPackageName() {
+		return t("My Theme");
+	}
+
+	public function getPackageDescription() {
+		return t("A wonderful theme this is!");
+	}
+	
+	public function install() {
+		$pkg = parent::install();
+		PageTheme::add('my_theme', $pkg);
+	}
+	
 	public function on_start() {
 		Events::extend('on_start', __CLASS__, 'setTheme', __FILE__);
 	}
 	
-Now we are going to add the `setTheme` function to our controller.
-
 	public function setTheme() {
 		Loader::model('page_theme');
 		$theme = PageTheme::getByHandle('my_theme');
 		$site = $theme->getSiteTheme();
 		if($theme == $site) { //we check to make sure this theme is applied to the site.
-			$pages = array('/login', '/page_not_found', '/register'); //these are the pages we want to theme
+			$pages = array('/login', '/page_not_found', '/register'); //these are the pages we wan't to theme
 			$view = View::getInstance();
 			foreach($pages as $page) {
 				$view->setThemeByPath($page, $theme->getThemeHandle());
 			}
 		}
 	}
-	
-Replace the pages array with an array of pages like those above, and `my_theme` with your theme handle.
 
-So our controller will now look like this:
-
-	<?php defined('C5_EXECUTE') or die("Access Denied.");
-	
-	class MyThemePackage extends Package {
-	
-		protected $pkgHandle = 'my_theme';
-		protected $appVersionRequired = '5.5.2';
-		protected $pkgVersion = '1.0';
-	
-		public function getPackageName() {
-			return t("My Theme");
-		}
-	
-		public function getPackageDescription() {
-			return t("A wonderful theme this is!");
-		}
-		
-		public function install() {
-			$pkg = parent::install();
-			PageTheme::add('my_theme', $pkg);
-		}
-		
-		public function on_start() {
-			Events::extend('on_start', __CLASS__, 'setTheme', __FILE__);
-		}
-		
-		public function setTheme() {
-			Loader::model('page_theme');
-			$theme = PageTheme::getByHandle('my_theme');
-			$site = $theme->getSiteTheme();
-			if($theme == $site) { //we check to make sure this theme is applied to the site.
-				$pages = array('/login', '/page_not_found', '/register'); //these are the pages we wan't to theme
-				$view = View::getInstance();
-				foreach($pages as $page) {
-					$view->setThemeByPath($page, $theme->getThemeHandle());
-				}
-			}
-		}
-	
-	}
+}
+```
 	
 And thats it!
